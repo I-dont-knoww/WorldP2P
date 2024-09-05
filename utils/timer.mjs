@@ -1,4 +1,4 @@
-const worker = new Worker('timerWorker.js');
+const worker = new Worker('timerworker.js');
 
 let currentID = 0;
 const callbacks = {};
