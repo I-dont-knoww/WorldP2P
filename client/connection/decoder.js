@@ -1,4 +1,4 @@
-import EventEmitter from '../../utils/eventemitter.js';
+import EventEmitter from '../../utils/eventemitter.mjs';
 
 class DecoderClass extends EventEmitter {
     constructor(connection, decodeFunction) {

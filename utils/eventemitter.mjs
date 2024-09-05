@@ -32,8 +32,10 @@ export default class EventEmitter {
     on(event, callback) {
         this.#listeners.push(new Listener(event, callback));
 
-        if (this.#listeners.length > this.#maxListeners)
+        if (this.#listeners.length > this.#maxListeners) {
             console.warn(`max listeners exceeded: listener count: ${this.#listeners.length}, max listeners: ${this.#maxListeners}`);
+            console.trace('max listeners exceeded');
+        }
     }
 
     /**

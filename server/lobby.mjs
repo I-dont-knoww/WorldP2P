@@ -50,6 +50,7 @@ const LobbyHandler = {
         return newClient;
     },
     handleClientClose(client) {
+        console.log(`client ${client.connection.key} has left`);
         client.leave();
     },
 
@@ -107,7 +108,6 @@ const LobbyHandler = {
     },
 
     leaveClient(client) {
-        console.log(`client ${client.connection.key} has left`);
         this.kickClient(client);
     },
 

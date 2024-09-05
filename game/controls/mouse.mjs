@@ -23,6 +23,11 @@ export default class Mouse {
         this.right = { held: false, tap: false };
 
         this.game = game;
+        this.game.on('postupdate', () => {
+            this.left.tap = false;
+            this.middle.tap = false;
+            this.right.tap = false;
+        });
     }
 
     /**
@@ -37,7 +42,6 @@ export default class Mouse {
 
         this[buttonName].held = true;
         this[buttonName].tap = true;
-        this.game.on('postupdate', () => this[buttonName].tap = false);
     }
 
     /**

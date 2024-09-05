@@ -1,4 +1,4 @@
-import EventEmitter from '../utils/eventemitter.js';
+import EventEmitter from '../utils/eventemitter.mjs';
 
 import { Vector } from '../utils/vector.mjs';
 import PlayerObject from './playerobject.mjs';

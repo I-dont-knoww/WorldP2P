@@ -1,4 +1,4 @@
-import EventEmitter from '../../utils/eventemitter.js';
+import EventEmitter from '../../utils/eventemitter.mjs';
 import { awaitDOMEvent } from '../../utils/promise.mjs';
 import headers from '../../headers.mjs';
 

@@ -1,7 +1,3 @@
-export function sleep(time) {
-    return new Promise(resolve => setTimeout(resolve, time));
-}
-
 export function resolveTo(promise, value) {
     return new Promise(resolve => promise.then(() => resolve(value)));
 }

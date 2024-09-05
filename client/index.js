@@ -1,5 +1,7 @@
 import Lobby from './lobby.js';
 
+import { Vec2, Vector } from '../utils/vector.mjs';
+
 import { textEncoder } from '../utils/textDecoderAndEncoder.mjs';
 import { HeaderEncoder } from './connection/encoder.js';
 
@@ -9,7 +11,17 @@ import Random from '../utils/random.mjs';
 import Input from '../game/controls/input.mjs';
 import InputsManager from './inputsmanager.js';
 
+import Path from './renderer/path.js';
+import Renderer from './renderer/renderer.js';
+
 import headers from '../headers.mjs';
+import { sleepWorker } from '../utils/timer.mjs';
+
+const canvas = document.querySelector('canvas');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const renderer = new Renderer(canvas);
 
 Lobby.initiate();
 
@@ -31,6 +43,12 @@ Input.listenToClient(clientInput);
 
 const inputsManager = new InputsManager(game);
 
+function draw() {
+    renderer.renderGameState(game);
+    requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+
 while (true) {
     const inputManagerPromise = inputsManager.listenForInputs();
 
@@ -40,7 +58,7 @@ while (true) {
     inputsMessage.set(serializedInput, game.connection.key.length);
     game.connection.send(HeaderEncoder(headers.client.REFLECT, HeaderEncoder(headers.client.INPUTS, inputsMessage)));
 
-    await inputManagerPromise;
+    await Promise.all([inputManagerPromise, sleepWorker(1000 / 60)]);
 
     game.update(inputsManager.inputs);
 }

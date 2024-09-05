@@ -3,7 +3,7 @@ import { Vector } from '../utils/vector.mjs';
 
 import Input from './controls/input.mjs';
 
-export const playerSpeed = 0.05;
+export const playerSpeed = 0.75;
 export const socketKeyLength = 24;
 
 export const playerSize = 10;

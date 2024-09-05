@@ -179,6 +179,7 @@ export default class Keyboard {
         this.tapped = new Set();
 
         this.game = game;
+        this.game.on('postupdate', () => this.tapped.clear());
     }
 
     /**
@@ -187,8 +188,6 @@ export default class Keyboard {
     keydown(code) {
         this.held.add(code);
         this.tapped.add(code);
-
-        this.game.once('postupdate', () => this.tapped.delete(code));
     }
 
     /**
