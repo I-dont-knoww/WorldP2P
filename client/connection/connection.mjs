@@ -2,8 +2,8 @@ import EventEmitter from '../../utils/eventemitter.mjs';
 import { awaitDOMEvent } from '../../utils/promise.mjs';
 import headers from '../../headers.mjs';
 
-import { HeaderDecoder } from './decoder.js';
-import { HeaderEncoder } from './encoder.js';
+import { HeaderDecoder } from './decoder.mjs';
+import { HeaderEncoder } from './encoder.mjs';
 
 import { textDecoder } from '../../utils/textDecoderAndEncoder.mjs';
 

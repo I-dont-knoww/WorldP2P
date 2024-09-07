@@ -17,13 +17,15 @@ export default class InputsManager {
 
         const socketKeys = Object.keys(game.players);
         for (let i = 0; i < socketKeys.length; i++) this.inputs[socketKeys[i]] = new Input(game);
+
+        this.game.on('leave', player => delete this.inputs[player.socketKey]);
     }
 
     listenForInputs() {
         return new Promise(resolve => {
             let inputsReceived = 0;
             
-            const listen = data => {
+            const listenInputs = data => {
                 const socketKey = textDecoder.decode(data.slice(0, socketKeyLength));
                 const serializedInput = data.slice(socketKeyLength);
                 
@@ -31,13 +33,27 @@ export default class InputsManager {
                 
                 inputsReceived++;
                 
-                if (inputsReceived == this.game.playerCount) {
-                    this.game.connection.decoder.off(headers.client.INPUTS, listen);
+                if (inputsReceived == Object.keys(this.inputs).length) {
+                    this.game.connection.decoder.off(headers.client.INPUTS, listenInputs);
+                    this.game.off('leave', listenLeave);
                     resolve();
                 }
             };
+
+            const listenLeave = () => {
+                inputsReceived++;
+                console.log(`inputs received: ${inputsReceived}`);
+                console.log(`inputs expected: ${Object.keys(this.inputs).length}`);
+
+                if (inputsReceived >= Object.keys(this.inputs).length) {
+                    this.game.connection.decoder.off(headers.client.INPUTS, listenInputs);
+                    this.game.off('leave', listenLeave);
+                    resolve();
+                }
+            }
             
-            this.game.connection.decoder.on(headers.client.INPUTS, listen);
+            this.game.connection.decoder.on(headers.client.INPUTS, listenInputs);
+            this.game.on('leave', listenLeave);
         });
     }
 }

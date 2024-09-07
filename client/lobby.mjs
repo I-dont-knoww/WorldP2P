@@ -1,8 +1,10 @@
-import createConnection, { Connection } from './connection/connection.js';
+import createConnection, { Connection } from './connection/connection.mjs';
 
 import { textDecoder, textEncoder } from '../utils/textDecoderAndEncoder.mjs';
 import { awaitDOMEvent, resolveTo } from '../utils/promise.mjs';
-import { HeaderEncoder } from './connection/encoder.js';
+import { HeaderEncoder } from './connection/encoder.mjs';
+
+import { MAXLOBBYSIZE } from '../game/game.mjs';
 
 import { socketKeyLength } from '../game/playerobject.mjs';
 import headers from '../headers.mjs';
@@ -18,6 +20,7 @@ export default {
         this.startMenu = document.querySelector('#startMenu');
         this.hostMenu = document.querySelector('#hostMenu');
         this.joinMenu = document.querySelector('#joinMenu');
+        this.joinFailMenu = document.querySelector('#joinFailMenu');
 
         this.hostButton = document.querySelector('#startMenu>#hostButton');
         this.joinCodeInput = document.querySelector('#startMenu>#joinCodeInput');
@@ -25,11 +28,14 @@ export default {
 
         this.startGameButton = document.querySelector('#hostMenu>#startGameButton');
         this.lobbyCode = document.querySelector('#hostMenu>#lobbyCode');
+        this.playerCount = document.querySelector('#hostMenu>#playerCount');
 
         this.joinInformation = document.querySelector('#joinMenu>#joinInformation');
+        this.joinFailText = document.querySelector('#joinFailMenu>#joinFailText');
 
         this.hostMenu.style.display = 'none';
         this.joinMenu.style.display = 'none';
+        this.joinFailMenu.style.display = 'none';
     },
 
     /**
@@ -64,6 +70,13 @@ export default {
 
         this.lobbyCode.innerText = connection.key;
 
+        let players = 1;
+        this.playerCount.innerText = `${players}/${MAXLOBBYSIZE}`;
+        connection.decoder.on(headers.server.NEWPLAYER, () => {
+            players++;
+            this.playerCount.innerText = `${players}/${MAXLOBBYSIZE}`;
+        });
+
         await awaitDOMEvent('click', this.startGameButton);
 
         this.hostMenu.style.display = 'none';
@@ -78,8 +91,6 @@ export default {
         connection.send(HeaderEncoder(headers.client.ISHOST, new Uint8Array([0])));
         await connection.awaitMessageWithHeader(headers.server.OK);
 
-        this.joinMenu.style.display = 'block';
-
         connection.send(HeaderEncoder(headers.client.JOINLOBBY, textEncoder.encode(this.joinCodeInput.value)));
         const result = await Promise.any([
             resolveTo(connection.awaitMessageWithHeader(headers.server.OK), joinResults.OK),
@@ -87,8 +98,15 @@ export default {
             resolveTo(connection.awaitMessageWithHeader(headers.server.LOBBYNOTACCEPT), joinResults.NOTACCEPT),
         ]);
 
-        if (result == joinResults.NOTEXIST) throw new Error('requested lobby does not exist');
-        else if (result == joinResults.NOTACCEPT) throw new Error('requested lobby did not accept join request');
+        if (result == joinResults.NOTEXIST) {
+            this.joinFailMenu.style.display = 'block';
+            this.joinFailText.innerText = 'Lobby does not exist.';
+            throw new Error('requested lobby does not exist');
+        } else if (result == joinResults.NOTACCEPT) {
+            this.joinFailMenu.style.display = 'block';
+            this.joinFailText.innerText = 'Lobby did not accept join request (lobby was full or already started game).';
+            throw new Error('requested lobby did not accept join request');
+        } else this.joinMenu.style.display = 'block';
     },
 
     /**

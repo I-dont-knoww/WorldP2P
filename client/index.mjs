@@ -1,27 +1,23 @@
-import Lobby from './lobby.js';
+import Lobby from './lobby.mjs';
 
 import { Vec2, Vector } from '../utils/vector.mjs';
 
 import { textEncoder } from '../utils/textDecoderAndEncoder.mjs';
-import { HeaderEncoder } from './connection/encoder.js';
+import { HeaderEncoder } from './connection/encoder.mjs';
 
 import Game from '../game/game.mjs';
 import Random from '../utils/random.mjs';
 
 import Input from '../game/controls/input.mjs';
-import InputsManager from './inputsmanager.js';
+import InputsManager from './inputsmanager.mjs';
 
-import Path from './renderer/path.js';
-import Renderer from './renderer/renderer.js';
+import Path from './renderer/path.mjs';
+import Renderer from './renderer/renderer.mjs';
+import LayerRenderer from './renderer/layerrenderer.mjs';
+import OffscreenCanvasManager from './renderer/offscreencanvasmanager.mjs';
 
 import headers from '../headers.mjs';
 import { sleepWorker } from '../utils/timer.mjs';
-
-const canvas = document.querySelector('canvas');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-const renderer = new Renderer(canvas);
 
 Lobby.initiate();
 
@@ -37,6 +33,7 @@ console.log(`host/join sequence made`);
 
 const { socketKeys, randomseed } = await Lobby.startGame(connection);
 const game = new Game(Game.createPlayers(socketKeys), connection, new Random(randomseed));
+const layerenderer = new LayerRenderer(new Vec2(innerWidth, innerHeight));
 
 const clientInput = new Input(game);
 Input.listenToClient(clientInput);
@@ -44,7 +41,15 @@ Input.listenToClient(clientInput);
 const inputsManager = new InputsManager(game);
 
 function draw() {
-    renderer.renderGameState(game);
+    layerenderer.clear();
+    for (let i = 0; i < game.objects.length; i++) {
+        const object = game.objects[i];
+
+        layerenderer.renderPath(Renderer.renderType.FILL, 0, Path.CIRCLE(object.pos, 10), {
+            fillStyle: 'black'
+        });
+    }
+
     requestAnimationFrame(draw);
 }
 requestAnimationFrame(draw);

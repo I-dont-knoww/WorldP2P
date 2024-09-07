@@ -1,5 +1,4 @@
-import Game from '../../game/game.mjs';
-import Path from './path.js';
+import Path from './path.mjs';
 
 import { Vec2, Vector } from '../../utils/vector.mjs';
 
@@ -10,7 +9,7 @@ export default class Renderer {
     };
 
     /**
-     * @param {Element} canvas
+     * @param {HTMLElement|OffscreenCanvas} canvas
      */
     constructor(canvas) {
         this.canvas = canvas;
@@ -24,19 +23,8 @@ export default class Renderer {
         };
     }
 
-    /**
-     * @param {Game} game
-     */
-    renderGameState(game) {
+    clear() {
         this.ctx.clearRect(0, 0, ...this.canvasSize.components());
-
-        for (let i = 0; i < game.objects.length; i++) {
-            const object = game.objects[i];
-
-            this.renderPath(Renderer.renderType.FILL, Path.CIRCLE(object.pos, 10), {
-                fillStyle: 'black'
-            });
-        }
     }
 
     /**
@@ -49,5 +37,17 @@ export default class Renderer {
 
         if (type == Renderer.renderType.FILL) this.ctx.fill(path);
         else if (type == Renderer.renderType.STROKE) this.ctx.stroke(path);
+    }
+
+    /**
+     * @param {string|HTMLImageElement|SVGImageElement|HTMLCanvasElement|ImageBitmap|OffscreenCanvas} image
+     * @param {Vec2} pos
+     * @param {Object<string, *>} settings
+     */
+    renderImage(image, pos, settings) {
+        const imageToDraw = typeof image == 'string' ? new Image(image) : image;
+        Object.assign(this.ctx, settings);
+
+        this.ctx.drawImage(imageToDraw, ...pos.components());
     }
 }

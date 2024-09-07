@@ -62,8 +62,11 @@ export default class Path extends Path2D {
         return path;
     }
 
-    constructor() {
-        super();
+    /**
+     * @param {Path2D|String} [input]
+     */
+    constructor(input) {
+        super(input);
 
         this.rotateAngle = 0;
         this.rotateOrigin = Vector.ZERO;

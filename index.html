@@ -29,7 +29,7 @@
 </head>
 
 <body>
-    <script type="module" src="./client/index.js"></script>
+    <script type="module" src="./client/index.mjs"></script>
 
     <div class="popup" id="startMenu">
         <h1>Would you like to host a game or join a game?</h1>
@@ -42,6 +42,7 @@
     <div class="popup" id="hostMenu">
         <h1>Host Game</h1>
         <h3 id="lobbyCode"></h3>
+        <p id="playerCount"></p>
         <button id="startGameButton">Start Game</button>
     </div>
 
@@ -49,7 +50,9 @@
         <h1 id="joinInformation">Waiting for host to start game...</h1>
     </div>
 
-    <canvas></canvas>
+    <div class="popup" id="joinFailMenu">
+        <h1 id="joinFailText"></h1>
+    </div>
 </body>
 
 </html>

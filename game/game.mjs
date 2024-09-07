@@ -5,7 +5,12 @@ import PlayerObject from './playerobject.mjs';
 
 import Input from './controls/input.mjs';
 import Random from '../utils/random.mjs';
-import { Connection } from '../client/connection/connection.js';
+import { textDecoder } from '../utils/textDecoderAndEncoder.mjs';
+import { Connection } from '../client/connection/connection.mjs';
+
+import headers from '../headers.mjs';
+
+export const MAXLOBBYSIZE = 6;
 
 export default class Game extends EventEmitter {
     /**
@@ -25,6 +30,8 @@ export default class Game extends EventEmitter {
         this.objects = Object.values(players);
 
         this.step = 0;
+
+        this.connection.decoder.on(headers.server.LEAVE, data => this.leavePlayer(textDecoder.decode(data)));
     }
 
     /**
@@ -48,12 +55,44 @@ export default class Game extends EventEmitter {
     }
 
     deleteNecessaryObjects() {
-        for (let i = this.objects.length - 1; i >= 0; i--) if (this.objects[i].remove) {
-            const temp = this.objects[i];
-            this.objects[i] = this.objects.at(-1);
-            this.objects[this.objects.length - 1] = temp;
-            this.objects.pop();
-        }
+        for (let i = this.objects.length - 1; i >= 0; i--) if (this.objects[i].remove)
+            this.deleteObjectIndex(i);
+    }
+
+    /**
+     * @param {*} object
+     * @returns {*}
+     */
+    deleteObject(object) {
+        const index = this.objects.findIndex(v => v == object);
+
+        return this.deleteObjectIndex(index);
+    }
+
+    /**
+     * @param {number} index
+     * @returns {*}
+     */
+    deleteObjectIndex(index) {
+        const temp = this.objects[index];
+        this.objects[index] = this.objects.at(-1);
+        this.objects[this.objects.length - 1] = temp;
+        this.objects.pop();
+
+        return temp;
+    }
+
+    /**
+     * @param {string} socketKey
+     */
+    leavePlayer(socketKey) {
+        console.log(`player ${socketKey} left`);
+        this.emit('leave', this.players[socketKey]);
+
+        this.deleteObject(this.players[socketKey]);
+        delete this.players[socketKey];
+
+        this.playerCount--;
     }
 
     /**

@@ -4,11 +4,13 @@ import { HeaderEncoder } from './encoder.mjs';
 import headers from '../headers.mjs';
 
 import { getSeed } from '../utils/random.mjs';
+import EventEmitter from '../utils/eventemitter.mjs';
 import GameHandler from './gamehandler.mjs';
+
+import { MAXLOBBYSIZE } from '../game/game.mjs';
 
 import { once } from 'events';
 
-export const MAXLOBBYSIZE = 6;
 export const clientStates = {
     INQUEUE: 0,
     INLOBBY: 1,
@@ -37,11 +39,11 @@ const LobbyHandler = {
                 newClient.send(HeaderEncoder(headers.server.OK));
                 await newClient.awaitMessageWithHeader(headers.client.OK);
                 newClient.send(HeaderEncoder(headers.server.YOURSOCKETKEY, Buffer.from(newClient.connection.key)));
-    
+
                 const isHost = (await isHostPromise)[0] == 1;
                 if (isHost) this.hostGame(newClient);
                 else this.joinGame(newClient);
-            } catch (e) {}
+            } catch (e) { }
         });
     },
     handleClientJoin(connection) {
@@ -68,7 +70,7 @@ const LobbyHandler = {
             client.send(HeaderEncoder(headers.server.OK));
 
             newLobby.startGame();
-        } catch (e) {}
+        } catch (e) { }
     },
     async joinGame(client) {
         try {
@@ -79,16 +81,20 @@ const LobbyHandler = {
 
             console.log(`client ${client.connection.key} joining game ${lobbyKey}`);
 
-            if (typeof lobbyToJoin == 'undefined')
+            if (typeof lobbyToJoin == 'undefined') {
                 client.send(HeaderEncoder(headers.server.LOBBYNOTEXIST));
-            else {
+                client.connection.sendCloseFrame(1000, 'lobby does not exist');
+            } else {
                 if (lobbyToJoin.addClient(client)) {
                     this.kickClient(client);
 
                     client.send(HeaderEncoder(headers.server.OK));
-                } else client.send(HeaderEncoder(headers.server.LOBBYNOTACCEPT))
+                } else {
+                    client.send(HeaderEncoder(headers.server.LOBBYNOTACCEPT));
+                    client.connection.sendCloseFrame(1000, 'lobby did not accept join request');
+                }
             }
-        } catch (e) {}
+        } catch (e) { }
     },
 
     kickClientIndex(index) {
@@ -123,8 +129,10 @@ const LobbyHandler = {
     }
 }; export default LobbyHandler;
 
-export class Lobby {
+export class Lobby extends EventEmitter {
     constructor(host) {
+        super();
+
         this.players = [];
         this.addClient(host);
 
@@ -134,6 +142,8 @@ export class Lobby {
     }
 
     startGame() {
+        this.state = lobbyStates.STARTED;
+
         this.sendAllKeys();
 
         const seed = getSeed();
@@ -171,6 +181,8 @@ export class Lobby {
         client.join(this.key);
         client.holder = this;
 
+        this.sendToAll(HeaderEncoder(headers.server.NEWPLAYER));
+
         return true;
     }
 
@@ -197,6 +209,7 @@ export class Lobby {
 
     leaveClient(client) {
         this.kickClient(client);
+        this.emit('leave', client.connection.key);
 
         if (this.players.length == 0) LobbyHandler.removeLobby(this);
     }

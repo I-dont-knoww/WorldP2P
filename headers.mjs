@@ -3,8 +3,10 @@ server.OK
 server.YOURSOCKETKEY
 server.LOBBYNOTEXIST
 server.LOBBYNOTACCEPT
+server.NEWPLAYER
 server.ALLSOCKETKEYS
 server.RANDOMSEED
+server.LEAVE
 client.OK
 client.ISHOST
 client.STARTGAME
