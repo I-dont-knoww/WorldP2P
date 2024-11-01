@@ -54,7 +54,7 @@ export default {
      */
     async initiateConnection(url) {
         const connection = await createConnection(url);
-        connection.initiate();
+        await connection.initiate();
 
         return connection;
     },

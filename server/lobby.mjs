@@ -52,7 +52,7 @@ const LobbyHandler = {
         return newClient;
     },
     handleClientClose(client) {
-        console.log(`client ${client.connection.key} has left`);
+        console.log(`client ${client.connection.key} has left`); // maybe sus
         client.leave();
     },
 

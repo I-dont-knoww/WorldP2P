@@ -1,4 +1,5 @@
 import { Vec2, Vector } from '../../utils/vector.mjs';
+import { awaitDOMEvent } from '../../utils/promise.mjs';
 
 export default class Path extends Path2D {
     /**

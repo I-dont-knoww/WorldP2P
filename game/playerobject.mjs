@@ -1,6 +1,8 @@
 import PhysicsObject from './physicsobject.mjs';
 import { Vector } from '../utils/vector.mjs';
 
+import LayerRenderer from '../client/renderer/layerrenderer.mjs';
+
 import Input from './controls/input.mjs';
 
 export const playerSpeed = 0.75;
@@ -31,6 +33,13 @@ export default class PlayerObject extends PhysicsObject {
 
         this.vel.mulInPlace(0.9);
         super.update();
+    }
+
+    /**
+     * @param {LayerRenderer} renderer
+     */
+    render(renderer) {
+        super.render(renderer);
     }
 
     /**

@@ -13,8 +13,7 @@ import InputsManager from './inputsmanager.mjs';
 
 import Path from './renderer/path.mjs';
 import Renderer from './renderer/renderer.mjs';
-import LayerRenderer from './renderer/layerrenderer.mjs';
-import OffscreenCanvasManager from './renderer/offscreencanvasmanager.mjs';
+import GameRenderer from './renderer/gamerenderer.mjs';
 
 import headers from '../headers.mjs';
 import { sleepWorker } from '../utils/timer.mjs';
@@ -33,7 +32,7 @@ console.log(`host/join sequence made`);
 
 const { socketKeys, randomseed } = await Lobby.startGame(connection);
 const game = new Game(Game.createPlayers(socketKeys), connection, new Random(randomseed));
-const layerenderer = new LayerRenderer(new Vec2(innerWidth, innerHeight));
+const renderer = new GameRenderer(new Vec2(innerWidth, innerHeight));
 
 const clientInput = new Input(game);
 Input.listenToClient(clientInput);
@@ -41,14 +40,7 @@ Input.listenToClient(clientInput);
 const inputsManager = new InputsManager(game);
 
 function draw() {
-    layerenderer.clear();
-    for (let i = 0; i < game.objects.length; i++) {
-        const object = game.objects[i];
-
-        layerenderer.renderPath(Renderer.renderType.FILL, 0, Path.CIRCLE(object.pos, 10), {
-            fillStyle: 'black'
-        });
-    }
+    renderer.renderGameState(game);
 
     requestAnimationFrame(draw);
 }
